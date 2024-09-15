@@ -1,0 +1,711 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>لوحة تحكم المشروع</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        body {
+            font-family: 'Cairo', sans-serif;
+        }
+        .dark {
+            background-color: #1a202c;
+            color: #e2e8f0;
+        }
+        .dark .bg-white {
+            background-color: #2d3748;
+        }
+        .dark .text-blue-500 {
+            color: #63b3ed;
+        }
+        .dark .bg-orange-500 {
+            background-color: #ed8936;
+        }
+        .dark .bg-orange-500:hover {
+            background-color: #dd6b20;
+        }
+        .dark .border {
+            border-color: #4a5568;
+        }
+        @media (max-width: 768px) {
+            .sidebar {
+                width: 100%;
+                height: auto;
+                position: relative;
+            }
+            .main-content {
+                margin-right: 0;
+            }
+        }
+    </style>
+</head>
+<body class="bg-gray-100 transition-colors duration-200">
+    <div class="flex flex-col md:flex-row">
+        <!-- Sidebar -->
+        <div class="sidebar w-full md:w-64 bg-blue-600 text-white p-4 md:fixed md:h-screen">
+            <div class="flex justify-between items-center mb-6">
+                <h1 class="text-2xl font-bold">لوحة التحكم</h1>
+                <div>
+                    <button id="lightModeToggle" class="p-2 rounded-full bg-yellow-400 text-white mr-2">
+                        <i class="fas fa-sun"></i>
+                    </button>
+                    <button id="darkModeToggle" class="p-2 rounded-full bg-gray-800 text-white">
+                        <i class="fas fa-moon"></i>
+                    </button>
+                </div>
+            </div>
+
+            <nav>
+                <ul>
+                    <li class="mb-4">
+                        <a href="#open-projects" class="flex items-center">
+                            <i class="fas fa-folder-open ml-2"></i>
+                            المشاريع المفتوحة
+                        </a>
+                    </li>
+                    <li class="mb-4">
+                        <a href="#closed-projects" class="flex items-center">
+                            <i class="fas fa-folder ml-2"></i>
+                            المشاريع المغلقة
+                        </a>
+                    </li>
+                    <li class="mb-4">
+                        <a href="#new-project" class="flex items-center">
+                            <i class="fas fa-plus-circle ml-2"></i>
+                            إنشاء مشروع جديد
+                        </a>
+                    </li>
+                    <li class="mb-4">
+                        <a href="#task-management" class="flex items-center">
+                            <i class="fas fa-tasks ml-2"></i>
+                            إدارة المهام
+                        </a>
+                    </li>
+                    <li class="mb-4">
+                        <a href="#team-management" class="flex items-center">
+                            <i class="fas fa-users ml-2"></i>
+                            إدارة الفرق
+                        </a>
+                    </li>
+                    <li class="mb-4">
+                        <a href="#reports" class="flex items-center">
+                            <i class="fas fa-chart-bar ml-2"></i>
+                            التقارير والإحصائيات
+                        </a>
+                    </li>
+                    <li class="mb-4">
+                        <a href="#user-management" class="flex items-center">
+                            <i class="fas fa-users-cog ml-2"></i>
+                            إدارة المستخدمين
+                        </a>
+                    </li>
+
+                </ul>
+            </nav>
+        </div>
+
+        <!-- Main Content -->
+        <div class="main-content flex-1 p-4 md:mr-64">
+            <div class="container mx-auto">
+                <div id="open-projects" class="mb-6">
+                    <h2 class="text-2xl font-bold text-blue-500 mb-2">المشاريع المفتوحة</h2>
+                    <ul id="openProjects" class="bg-white rounded-lg shadow p-4"></ul>
+                </div>
+                
+                <div id="closed-projects" class="mb-6">
+                    <h2 class="text-2xl font-bold text-blue-500 mb-2">المشاريع المغلقة</h2>
+                    <ul id="closedProjects" class="bg-white rounded-lg shadow p-4"></ul>
+                </div>
+                
+                <div id="new-project" class="mb-6">
+                    <h2 class="text-2xl font-bold text-blue-500 mb-2">إنشاء مشروع جديد</h2>
+                    <form id="newProjectForm" class="bg-white rounded-lg shadow p-4">
+                        <input type="text" id="projectName" placeholder="اسم المشروع" class="w-full p-2 mb-2 border rounded" required>
+                        <button type="submit" class="bg-orange-500 text-white px-4 py-2 rounded hover:bg-orange-600">إنشاء مشروع</button>
+                    </form>
+                </div>
+                
+                <div id="task-management" class="mb-6">
+                    <h2 class="text-2xl font-bold text-blue-500 mb-2">إدارة المهام</h2>
+                    <div class="bg-white rounded-lg shadow p-4">
+                        <form id="newTaskForm" class="mb-4">
+                            <select id="projectSelect" class="w-full p-2 mb-2 border rounded" required>
+                                <option value="">اختر المشروع</option>
+                            </select>
+                            <input type="text" id="taskName" placeholder="اسم المهمة" class="w-full p-2 mb-2 border rounded" required>
+                            <select id="taskStatus" class="w-full p-2 mb-2 border rounded" required>
+                                <option value="open">مفتوحة</option>
+                                <option value="in-progress">جارية</option>
+                                <option value="closed">مغلقة</option>
+                            </select>
+                            <select id="taskPriority" class="w-full p-2 mb-2 border rounded" required>
+                                <option value="low">منخفضة</option>
+                                <option value="medium">متوسطة</option>
+                                <option value="high">عالية</option>
+                            </select>
+                            <button type="submit" class="bg-orange-500 text-white px-4 py-2 rounded hover:bg-orange-600">إضافة مهمة</button>
+                        </form>
+                        <div id="taskList" class="overflow-x-auto"></div>
+                    </div>
+                </div>
+            </div>
+            <div id="reports" class="mb-6">
+                <h2 class="text-2xl font-bold text-blue-500 mb-2">التقارير والإحصائيات</h2>
+                <div class="bg-white rounded-lg shadow p-4">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <h3 class="text-lg font-bold mb-2">تقدم المشروع</h3>
+                            <canvas id="projectProgressChart"></canvas>
+                        </div>
+                        <div>
+                            <h3 class="text-lg font-bold mb-2">حالة المهام</h3>
+                            <canvas id="taskStatusChart"></canvas>
+                        </div>
+                    </div>
+                    <div class="mt-4">
+                        <h3 class="text-lg font-bold mb-2">أداء الفرق</h3>
+                        <table class="w-full border-collapse">
+                            <thead>
+                                <tr class="bg-gray-200">
+                                    <th class="border p-2">الفريق</th>
+                                    <th class="border p-2">المهام المكتملة</th>
+                                    <th class="border p-2">المهام قيد التنفيذ</th>
+                                    <th class="border p-2">المهام المتأخرة</th>
+                                </tr>
+                            </thead>
+                            <tbody id="teamPerformanceTable">
+                                <!-- سيتم ملء هذا الجدول بالبيانات باستخدام JavaScript -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+        </div>
+    </div>
+
+
+    <div id="team-management" class="mb-6 w-96 mx-auto">
+        <h2 class="text-2xl font-bold text-blue-500 mb-2">إدارة الفرق</h2>
+        <div class="bg-white rounded-lg shadow p-4">
+            <form id="newTeamForm" class="mb-4">
+                <input type="text" id="teamName" placeholder="اسم الفريق" class="w-full p-2 mb-2 border rounded" required>
+                <button type="submit" class="bg-orange-500 text-white px-4 py-2 rounded hover:bg-orange-600">إنشاء فريق</button>
+            </form>
+            <div id="teamList" class="mb-4"></div>
+            <form id="addMemberForm" class="mb-4">
+                <select id="teamSelect" class="w-full p-2 mb-2 border rounded" required>
+                    <option value="">اختر الفريق</option>
+                </select>
+                <input type="text" id="memberName" placeholder="اسم العضو" class="w-full p-2 mb-2 border rounded" required>
+                <select id="memberRole" class="w-full p-2 mb-2 border rounded" required>
+                    <option value="member">عضو</option>
+                    <option value="leader">قائد</option>
+                    <option value="admin">مدير</option>
+                </select>
+                <button type="submit" class="bg-orange-500 text-white px-4 py-2 rounded hover:bg-orange-600">إضافة عضو</button>
+            </form>
+        </div>
+    </div>
+</div>
+
+<div id="user-management" class="mb-6">
+    <h2 class="text-2xl font-bold text-blue-500 mb-2">إدارة المستخدمين</h2>
+    <div class="bg-white rounded-lg shadow p-4">
+        <form id="addUserForm" class="mb-4">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <input type="text" id="userName" placeholder="اسم المستخدم" class="w-full p-2 border rounded" required>
+                <input type="email" id="userEmail" placeholder="البريد الإلكتروني" class="w-full p-2 border rounded" required>
+                <select id="userRole" class="w-full p-2 border rounded" required>
+                    <option value="">اختر الدور</option>
+                    <option value="admin">مدير</option>
+                    <option value="manager">مشرف</option>
+                    <option value="user">مستخدم عادي</option>
+                </select>
+                <button type="submit" class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600">إضافة مستخدم</button>
+            </div>
+        </form>
+        <div class="overflow-x-auto">
+            <table class="w-full border-collapse">
+                <thead>
+                    <tr class="bg-gray-200">
+                        <th class="border p-2">الاسم</th>
+                        <th class="border p-2">البريد الإلكتروني</th>
+                        <th class="border p-2">الدور</th>
+                        <th class="border p-2">الإجراءات</th>
+                    </tr>
+                </thead>
+                <tbody id="userList">
+                    <!-- سيتم ملء هذا الجدول بالبيانات باستخدام JavaScript -->
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+</div>
+
+
+</div>
+</div>
+
+
+    <script>
+        
+        let projects = [];
+        let teams = [];
+        let darkMode = localStorage.getItem('darkMode') === 'true';
+
+        function toggleDarkMode(value) {
+            darkMode = value;
+            localStorage.setItem('darkMode', darkMode);
+            document.body.classList.toggle('dark', darkMode);
+            document.getElementById('darkModeToggle').style.display = darkMode ? 'none' : 'inline-block';
+            document.getElementById('lightModeToggle').style.display = darkMode ? 'inline-block' : 'none';
+        }
+
+  // تحديث حالة الوضع الداكن عند تحميل الصفحة
+  toggleDarkMode(darkMode);
+
+document.getElementById('darkModeToggle').addEventListener('click', function() {
+    toggleDarkMode(true);
+});
+
+document.getElementById('lightModeToggle').addEventListener('click', function() {
+    toggleDarkMode(false);
+});
+
+
+        function renderProjects() {
+            const openProjectsList = document.getElementById('openProjects');
+            const closedProjectsList = document.getElementById('closedProjects');
+            const projectSelect = document.getElementById('projectSelect');
+            
+            openProjectsList.innerHTML = '';
+            closedProjectsList.innerHTML = '';
+            projectSelect.innerHTML = '<option value="">اختر المشروع</option>';
+            
+            projects.forEach(project => {
+                const li = document.createElement('li');
+                li.className = 'mb-2 flex justify-between items-center';
+                li.innerHTML = `
+                    <span class="font-bold">${project.name}</span>
+                    <button class="text-blue-500" onclick="toggleProjectStatus(${project.id})">
+                        <i class="fas ${project.status === 'open' ? 'fa-lock' : 'fa-lock-open'}"></i>
+                    </button>
+                `;
+                
+                if (project.status === 'open') {
+                    openProjectsList.appendChild(li);
+                } else {
+                    closedProjectsList.appendChild(li);
+                }
+                
+                const option = document.createElement('option');
+                option.value = project.id;
+                option.textContent = project.name;
+                projectSelect.appendChild(option);
+            });
+
+            renderTasks();
+        }
+
+        function renderTasks() {
+            const taskList = document.getElementById('taskList');
+            taskList.innerHTML = '';
+
+            projects.forEach(project => {
+                if (project.tasks && project.tasks.length > 0) {
+                    const projectDiv = document.createElement('div');
+                    projectDiv.className = 'mb-4';
+                    projectDiv.innerHTML = `<h3 class="font-bold text-lg mb-2">${project.name}</h3>`;
+
+                    const taskTable = document.createElement('table');
+                    taskTable.className = 'w-full';
+                    taskTable.innerHTML = `
+                        <thead>
+                            <tr>
+                                <th class="text-right p-2">المهمة</th>
+                                <th class="text-right p-2">الحالة</th>
+                                <th class="text-right p-2">الأولوية</th>
+                                <th class="text-right p-2">الإجراءات</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${project.tasks.map((task, index) => `
+                                <tr>
+                                    <td class="p-2">${task.name}</td>
+                                    <td class="p-2">${getStatusInArabic(task.status)}</td>
+                                    <td class="p-2">${getPriorityInArabic(task.priority)}</td>
+                                    <td class="p-2">
+                                        <button onclick="editTask(${project.id}, ${index})" class="text-blue-500 ml-2">
+                                            <i class="fas fa-edit"></i>
+                                        </button>
+                                        <button onclick="deleteTask(${project.id}, ${index})" class="text-red-500 ml-2">
+                                            <i class="fas fa-trash"></i>
+                                        </button>
+                                    </td>
+                                </tr>
+                            `).join('')}
+                        </tbody>
+                    `;
+
+                    projectDiv.appendChild(taskTable);
+                    taskList.appendChild(projectDiv);
+                }
+            });
+        }
+
+        function getStatusInArabic(status) {
+            switch (status) {
+                case 'open': return 'مفتوحة';
+                case 'in-progress': return 'جارية';
+                case 'closed': return 'مغلقة';
+                default: return status;
+            }
+        }
+
+        function getPriorityInArabic(priority) {
+            switch (priority) {
+                case 'low': return 'منخفضة';
+                case 'medium': return 'متوسطة';
+                case 'high': return 'عالية';
+                default: return priority;
+            }
+        }
+
+        function addProject(name) {
+            const newProject = {
+                id: projects.length + 1,
+                name: name,
+                status: 'open',
+                tasks: []
+            };
+            projects.push(newProject);
+            renderProjects();
+        }
+
+        function addTask(projectId, taskName, status, priority) {
+            const project = projects.find(p => p.id === parseInt(projectId));
+            if (project) {
+                project.tasks.push({ name: taskName, status: status, priority: priority });
+                renderProjects();
+            }
+        }
+
+        function editTask(projectId, taskIndex) {
+            const project = projects.find(p => p.id === projectId);
+            if (project && project.tasks[taskIndex]) {
+                const task = project.tasks[taskIndex];
+                document.getElementById('projectSelect').value = projectId;
+                document.getElementById('taskName').value = task.name;
+                document.getElementById('taskStatus').value = task.status;
+                document.getElementById('taskPriority').value = task.priority;
+                // You might want to change the submit button text and add a cancel button here
+            }
+        }
+
+        function deleteTask(projectId, taskIndex) {
+            const project = projects.find(p => p.id === projectId);
+            if (project && project.tasks[taskIndex]) {
+                project.tasks.splice(taskIndex, 1);
+                renderProjects();
+            }
+        }
+
+        function toggleProjectStatus(projectId) {
+            const project = projects.find(p => p.id === projectId);
+            if (project) {
+                project.status = project.status === 'open' ? 'closed' : 'open';
+                renderProjects();
+            }
+        }
+
+        document.getElementById('newProjectForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const projectName = document.getElementById('projectName').value;
+            addProject(projectName);
+            this.reset();
+        });
+
+        document.getElementById('newTaskForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const projectId = document.getElementById('projectSelect').value;
+            const taskName = document.getElementById('taskName').value;
+            const taskStatus = document.getElementById('taskStatus').value;
+            const taskPriority = document.getElementById('taskPriority').value;
+            addTask(projectId, taskName, taskStatus, taskPriority);
+            this.reset();
+        });
+
+        document.getElementById('darkModeToggle').addEventListener('click', function() {
+            darkMode = !darkMode;
+            document.body.classList.toggle('dark', darkMode);
+            this.innerHTML = darkMode ? '<i class="fas fa-sun"></i>' : '<i class="fas fa-moon"></i>';
+        });
+
+        // إضافة بعض المشاريع للعرض
+        addProject('تطوير الموقع الإلكتروني');
+        addProject('تصميم تطبيق الهاتف');
+        addTask(1, 'إنشاء الصفحة الرئيسية', 'open', 'high');
+        addTask(2, 'تصميم واجهة المستخدم', 'in-progress', 'medium');
+
+
+
+        function renderTeams() {
+            const teamList = document.getElementById('teamList');
+            const teamSelect = document.getElementById('teamSelect');
+            
+            teamList.innerHTML = '';
+            teamSelect.innerHTML = '<option value="">اختر الفريق</option>';
+            
+            teams.forEach((team, index) => {
+                const teamDiv = document.createElement('div');
+                teamDiv.className = 'mb-4';
+                teamDiv.innerHTML = `
+                    <h3 class="font-bold text-lg mb-2">${team.name}</h3>
+                    <ul>
+                        ${team.members.map(member => `
+                            <li class="flex justify-between items-center mb-2">
+                                <span>${member.name} (${getRoleInArabic(member.role)})</span>
+                                <button onclick="removeMember(${index}, '${member.name}')" class="text-red-500">
+                                    <i class="fas fa-user-minus"></i>
+                                </button>
+                            </li>
+                        `).join('')}
+                    </ul>
+                `;
+                teamList.appendChild(teamDiv);
+
+                const option = document.createElement('option');
+                option.value = index;
+                option.textContent = team.name;
+                teamSelect.appendChild(option);
+            });
+        }
+
+        function getRoleInArabic(role) {
+            switch (role) {
+                case 'member': return 'عضو';
+                case 'leader': return 'قائد';
+                case 'admin': return 'مدير';
+                default: return role;
+            }
+        }
+
+        function addTeam(name) {
+            teams.push({ name: name, members: [] });
+            renderTeams();
+        }
+
+        function addMember(teamIndex, memberName, memberRole) {
+            teams[teamIndex].members.push({ name: memberName, role: memberRole });
+            renderTeams();
+        }
+
+        function removeMember(teamIndex, memberName) {
+            teams[teamIndex].members = teams[teamIndex].members.filter(member => member.name !== memberName);
+            renderTeams();
+        }
+
+        document.getElementById('newTeamForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const teamName = document.getElementById('teamName').value;
+            addTeam(teamName);
+            this.reset();
+        });
+
+        document.getElementById('addMemberForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const teamIndex = document.getElementById('teamSelect').value;
+            const memberName = document.getElementById('memberName').value;
+            const memberRole = document.getElementById('memberRole').value;
+            addMember(teamIndex, memberName, memberRole);
+            this.reset();
+        });
+
+        // إضافة بعض البيانات للعرض
+        addTeam('فريق التطوير');
+        addTeam('فريق التصميم');
+        addMember(0, 'أحمد', 'leader');
+        addMember(0, 'محمد', 'member');
+        addMember(1, 'سارة', 'admin');
+
+        renderTeams();
+
+        
+        function generateReports() {
+            // تقدم المشروع
+            const projectProgress = {
+                completed: 30,
+                inProgress: 50,
+                notStarted: 20
+            };
+
+            const projectProgressCtx = document.getElementById('projectProgressChart').getContext('2d');
+            new Chart(projectProgressCtx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['مكتمل', 'قيد التنفيذ', 'لم يبدأ'],
+                    datasets: [{
+                        data: [projectProgress.completed, projectProgress.inProgress, projectProgress.notStarted],
+                        backgroundColor: ['#4CAF50', '#FFC107', '#F44336']
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: {
+                            position: 'bottom'
+                        }
+                    }
+                }
+            });
+
+            // حالة المهام
+            const taskStatus = {
+                completed: 40,
+                inProgress: 30,
+                delayed: 20,
+                notStarted: 10
+            };
+
+            const taskStatusCtx = document.getElementById('taskStatusChart').getContext('2d');
+            new Chart(taskStatusCtx, {
+                type: 'pie',
+                data: {
+                    labels: ['مكتملة', 'قيد التنفيذ', 'متأخرة', 'لم تبدأ'],
+                    datasets: [{
+                        data: [taskStatus.completed, taskStatus.inProgress, taskStatus.delayed, taskStatus.notStarted],
+                        backgroundColor: ['#4CAF50', '#2196F3', '#FFC107', '#F44336']
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: {
+                            position: 'bottom'
+                        }
+                    }
+                }
+            });
+
+            // أداء الفرق
+            const teamPerformance = [
+                { name: 'فريق التطوير', completed: 20, inProgress: 15, delayed: 5 },
+                { name: 'فريق التصميم', completed: 15, inProgress: 10, delayed: 2 },
+                { name: 'فريق التسويق', completed: 10, inProgress: 5, delayed: 1 }
+            ];
+
+            const teamPerformanceTable = document.getElementById('teamPerformanceTable');
+            teamPerformanceTable.innerHTML = teamPerformance.map(team => `
+                <tr>
+                    <td class="border p-2">${team.name}</td>
+                    <td class="border p-2">${team.completed}</td>
+                    <td class="border p-2">${team.inProgress}</td>
+                    <td class="border p-2">${team.delayed}</td>
+                </tr>
+            `).join('');
+        }
+
+        // استدعاء وظيفة إنشاء التقارير عند تحميل الصفحة
+        window.addEventListener('load', generateReports);
+
+        
+        let users = [
+            { id: 1, name: 'أحمد محمد', email: 'ahmed@example.com', role: 'admin' },
+            { id: 2, name: 'سارة أحمد', email: 'sara@example.com', role: 'manager' },
+            { id: 3, name: 'محمد علي', email: 'mohamed@example.com', role: 'user' }
+        ];
+
+        function renderUsers() {
+            const userList = document.getElementById('userList');
+            userList.innerHTML = users.map(user => `
+                <tr>
+                    <td class="border p-2">${user.name}</td>
+                    <td class="border p-2">${user.email}</td>
+                    <td class="border p-2">${getRoleInArabic(user.role)}</td>
+                    <td class="border p-2">
+                        <button onclick="editUser(${user.id})" class="bg-yellow-500 text-white px-2 py-1 rounded mr-2">
+                            <i class="fas fa-edit"></i> تعديل
+                        </button>
+                        <button onclick="deleteUser(${user.id})" class="bg-red-500 text-white px-2 py-1 rounded">
+                            <i class="fas fa-trash-alt"></i> حذف
+                        </button>
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        function getRoleInArabic(role) {
+            switch (role) {
+                case 'admin': return 'مدير';
+                case 'manager': return 'مشرف';
+                case 'user': return 'مستخدم عادي';
+                default: return role;
+            }
+        }
+
+        function addUser(name, email, role) {
+            const newId = users.length > 0 ? Math.max(...users.map(u => u.id)) + 1 : 1;
+            users.push({ id: newId, name, email, role });
+            renderUsers();
+        }
+
+        function editUser(id) {
+            const user = users.find(u => u.id === id);
+            if (user) {
+                document.getElementById('userName').value = user.name;
+                document.getElementById('userEmail').value = user.email;
+                document.getElementById('userRole').value = user.role;
+                // تغيير زر الإضافة إلى زر التحديث
+                const submitButton = document.querySelector('#addUserForm button[type="submit"]');
+                submitButton.textContent = 'تحديث المستخدم';
+                submitButton.onclick = function(e) {
+                    e.preventDefault();
+                    updateUser(id);
+                };
+            }
+        }
+
+        function updateUser(id) {
+            const user = users.find(u => u.id === id);
+            if (user) {
+                user.name = document.getElementById('userName').value;
+                user.email = document.getElementById('userEmail').value;
+                user.role = document.getElementById('userRole').value;
+                renderUsers();
+                resetForm();
+            }
+        }
+
+        function deleteUser(id) {
+            users = users.filter(u => u.id !== id);
+            renderUsers();
+        }
+
+        function resetForm() {
+            document.getElementById('addUserForm').reset();
+            const submitButton = document.querySelector('#addUserForm button[type="submit"]');
+            submitButton.textContent = 'إضافة مستخدم';
+            submitButton.onclick = null;
+        }
+
+        document.getElementById('addUserForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const name = document.getElementById('userName').value;
+            const email = document.getElementById('userEmail').value;
+            const role = document.getElementById('userRole').value;
+            addUser(name, email, role);
+            this.reset();
+        });
+
+        // استدعاء وظيفة عرض المستخدمين عند تحميل الصفحة
+        window.addEventListener('load', renderUsers);
+        
+    </script>
+</body>
+</html>
